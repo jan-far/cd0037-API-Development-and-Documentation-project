@@ -1,6 +1,8 @@
 .vscode
 __pycache__
 venv
+lib
+pyvenv.cfg
 
 # OS generated files #
 ######################
@@ -12,4 +14,11 @@ venv
 ehthumbs.db
 Thumbs.db
 env/
+
+backend/bin
+backend/lib
+backend/site-packages
+
 frontend/node_modules/
+frontend/yarn.lock
+frontend/package-lock.json
