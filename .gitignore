@@ -18,6 +18,7 @@ env/
 backend/bin
 backend/lib
 backend/site-packages
+backend/.env
 
 frontend/node_modules/
 frontend/yarn.lock

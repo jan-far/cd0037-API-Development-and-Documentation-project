@@ -1,7 +1,5 @@
-import os
 import sys
 from flask import Flask, request, abort, jsonify
-from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import random
 
@@ -59,11 +57,14 @@ def create_app(test_config=None):
     """
     @app.route('/categories')
     def get_categories():
-        categories = Category.query.all()
-        categories = [category.format() for category in categories]
-        structured = structure_categories(categories=categories)
+        try:
+            categories = Category.query.all()
+            categories = [category.format() for category in categories]
+            structured = structure_categories(categories=categories)
 
-        return jsonify({'categories': structured})
+            return jsonify({'categories': structured})
+        except:
+            abort(422)
 
     """
     @TODO:
@@ -79,22 +80,25 @@ def create_app(test_config=None):
     """
     @app.route('/questions')
     def get_questions():
-        categories = [category.format()
-                      for category in Category.query.order_by('id').all()]
-        structured = structure_categories(categories=categories)
-        questions = Question.query.order_by('id').all()
-        current_questions = paginate(request, questions)
+        try:
+            categories = [category.format()
+                          for category in Category.query.order_by('id').all()]
+            structured = structure_categories(categories=categories)
+            questions = Question.query.order_by('id').all()
+            current_questions = paginate(request, questions)
 
-        if len(current_questions) == 0:
-            abort(404)
+            if len(current_questions) == 0:
+                abort(404)
 
-        return jsonify({
-            'success': True,
-            'questions': current_questions,
-            'totalQuestions': len(questions),
-            'currentCategory': 'History',
-            'categories': structured,
-        })
+            return jsonify({
+                'success': True,
+                'questions': current_questions,
+                'totalQuestions': len(questions),
+                'currentCategory': 'History',
+                'categories': structured,
+            })
+        except:
+            abort(422)
 
     """
     @TODO:
@@ -150,6 +154,9 @@ def create_app(test_config=None):
                 answer = body.get('answer', None),
                 category = body.get('category', None),
                 difficulty = body.get('difficulty', None)
+
+                if question is None or answer is None or category is None or difficulty is None:
+                    abort(400, 'Missing required fields!')
 
                 new_question = Question(
                     question=question, answer=answer, category=category, difficulty=difficulty)
@@ -226,6 +233,8 @@ def create_app(test_config=None):
                     questions = Question.query.filter(
                         Question.category == category['id']).all()
 
+                if questions == []:
+                    abort(404)
                 format_questions = [q.format() for q in questions]
                 next_questions = []
 
@@ -235,13 +244,13 @@ def create_app(test_config=None):
 
                 if len(next_questions):
                     question = next_questions[random.randint(
-                        0, len(next_questions))]
+                        0, len(next_questions) - 1)]
                     return jsonify({
                         'question': question,
                     })
                 else:
                     return jsonify({
-                        "question": "null"
+                        "question": None,
                     })
             else:
                 abort(404)
